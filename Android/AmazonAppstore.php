@@ -134,6 +134,7 @@ class AmazonAppstore extends MarketBot\Android
             }
 
             $image = $page->find('#prodImage')->attr('src');
+            $app->setImageThumbnail($image);
             $app->setImageIcon($image);
 
             // @todo screenshots
@@ -220,6 +221,7 @@ class AmazonAppstore extends MarketBot\Android
 
                 $image = $item->find('div.image img')->attr('src');
                 $app->setImageThumbnail($image);
+                $app->setImageIcon($image);
 
                 $apps[$market_id] = $app;
             }

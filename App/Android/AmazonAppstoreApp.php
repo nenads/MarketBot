@@ -105,6 +105,10 @@ class AmazonAppstoreApp extends MarketBot\App\AndroidApp
     public function setImageThumbnail($image)
     {
         if (!empty($image)) {
+            if (strpos($image, '._SL500_AA280_.png') !== false) {
+                $image = str_replace('._SL500_AA280_.png', '._AA115_.png', $image);
+            }
+
             $this->images['thumbnail'] = $image;
         }
     }
@@ -129,6 +133,10 @@ class AmazonAppstoreApp extends MarketBot\App\AndroidApp
     public function setImageIcon($image)
     {
         if (!empty($image)) {
+            if (strpos($image, '._AA115_.png') !== false) {
+                $image = str_replace('._AA115_.png', '._SL500_AA280_.png', $image);
+            }
+
             $this->images['icon'] = $image;
         }
     }
