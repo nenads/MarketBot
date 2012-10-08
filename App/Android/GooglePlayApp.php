@@ -98,13 +98,6 @@ class GooglePlayApp extends MarketBot\App\AndroidApp
     protected $videos = array();
 
     /**
-     * Product category
-     *
-     * @var string
-     */
-    protected $category;
-
-    /**
      * Format and set the price for this app.
      *
      * @param string
@@ -356,28 +349,6 @@ class GooglePlayApp extends MarketBot\App\AndroidApp
     public function getVideos()
     {
         return $this->videos;
-    }
-
-    /**
-     * Set the product category that this app belongs to.
-     *
-     * @param string $category
-     *
-     * @return void
-     */
-    public function setCategory($category)
-    {
-        $this->category = $category;
-    }
-
-    /**
-     * Get the product category that this app belongs to.
-     *
-     * @return string
-     */
-    public function getCategory()
-    {
-        return $this->category;
     }
 
     /**

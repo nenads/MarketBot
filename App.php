@@ -84,6 +84,13 @@ abstract class App
     protected $description;
 
     /**
+     * Product category
+     *
+     * @var string
+     */
+    protected $category;
+
+    /**
      * Release notes
      *
      * @var string
@@ -285,6 +292,28 @@ abstract class App
     public function getDescription()
     {
         return $this->description;
+    }
+
+    /**
+     * Set the product category that this app belongs to.
+     *
+     * @param string $category
+     *
+     * @return void
+     */
+    public function setCategory($category)
+    {
+        $this->category = $category;
+    }
+
+    /**
+     * Get the product category that this app belongs to.
+     *
+     * @return string
+     */
+    public function getCategory()
+    {
+        return $this->category;
     }
 
     /**
