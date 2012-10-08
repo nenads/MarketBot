@@ -231,9 +231,9 @@ class WindowsPhone extends MarketBot
                 $rating = trim(str_replace('ratingSmall', '', $rating));
                 $app->setRating($rating);
 
-                $image = $item->find('a.appImage img');
-                $image = $image->attr('src');
+                $image = $item->find('a.appImage img')->attr('src');
                 $app->setImageThumbnail($image);
+                $app->setImageIcon($image);
 
                 $apps[$market_id] = $app;
             }
