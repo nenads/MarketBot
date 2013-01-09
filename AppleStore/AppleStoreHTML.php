@@ -1,5 +1,5 @@
 <?php
-namespace PastFuture\MarketBot\Android;
+namespace PastFuture\MarketBot\AppleStore;
 /**
  * MarketBot
  *
@@ -49,7 +49,7 @@ use PastFuture\MarketBot\App;
  * @author Jon Ursenbach <jon@gdgt.com>
  * @since 0.1
  */
-class GooglePlay extends MarketBot\Android
+class AppleStoreHTML extends MarketBot\AppleStore
 {
     /**
      * Search type

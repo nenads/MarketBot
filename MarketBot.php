@@ -66,10 +66,11 @@ class MarketBot
      * Initialize the phpQuery scraper for use.
      *
      * @param string $url
+     * @param string $format
      *
      * @return void
      */
-    protected function initScraper($url)
+    protected function initScraper($url, $format = 'HTML')
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -79,8 +80,13 @@ class MarketBot
 
         $response = curl_exec($ch);
         curl_close($ch);
-
-        \phpQuery::newDocument($response);
+        if ($format == 'JSON') {
+          return $response;
+        } else {
+          \phpQuery::newDocument($response);
+        }
+          
+        
     }
 
     /**
