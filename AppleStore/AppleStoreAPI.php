@@ -18,7 +18,7 @@ class AppleStoreAPI extends MarketBot\AppleStore
      *
      * @var string
      */
-    private $search_type = 'apps';
+    private $search_type = 'software';
 
     /**
      * Safe Search
@@ -60,7 +60,7 @@ class AppleStoreAPI extends MarketBot\AppleStore
      *
      * @var string
      */
-    protected $details_url = 'https://itunes.apple.com/lookup';
+    protected $details_url = 'https://itunes.apple.com/lookup?%s=%s';
 
     /**
      * Search URL
@@ -80,8 +80,8 @@ class AppleStoreAPI extends MarketBot\AppleStore
      */
     public function get($market_id, $type)
     {
-        // Only apps are supported right now.
-        if (in_array($type, array('software'))) {
+        // Only software are supported right now.
+        if ($type != "software"){
             return false;
         }
 
@@ -98,163 +98,64 @@ class AppleStoreAPI extends MarketBot\AppleStore
      */
     private function getApp($market_id)
     {
-        $app = false;
+        $app = false; 
 
         try {
+
             $url = $this->getDetailsUrl($market_id);
-            $this->initScraper($url);
-
-            $page = \pq('.details-page');
-
-            $name = $page->find('.doc-banner-title')->text();
-            if (empty($name)) {
-                return false;
-            }
-
-            $app = new App\Android\GooglePlayApp(
+            $tmp_app = json_decode($this->initScraper($url, 'JSON'));
+            $item = $tmp_app->results[0];
+        
+            $market_id = $item->trackId;
+            /* @var $apps PastFuture\MarketBot\App\AppleStoreApp */
+            $app = new \PastFuture\MarketBot\App\AppleStoreApp(
                 array(
-                    'market_id' => $market_id,
-                    'url' => $url,
-                    'name' => $name,
-                    'developer' => $page->find('.doc-banner-title-container a')->text(),
-                    'description' => $page->find('#doc-original-text')->html(),
-
-                    'release_notes' => $page->find('.doc-whatsnew-container')->html(),
-
-                    'rating' => $page->find('.average-rating-value')->text(),
-                    'votes' => $page->find('.votes:first')->text()
+                  'market_id' => $market_id,
+                  'name' => $item->trackName,
+                  'description' => $item->description,
+                  'release_notes' => $item->releaseNotes,
+                  'url' => $item->trackViewUrl
                 )
             );
 
-            $similar = $page->find('.doc-similar')->children();
-            if (!empty($similar)) {
-                foreach ($similar as $similar_type) {
-                    $similar_type = \pq($similar_type);
-
-                    $type = $similar_type->attr('data-analyticsid');
-                    $type = str_replace('-', '_', $type);
-
-                    $similar_apps = $similar_type->find('.snippet-list')->children();
-                    if (!empty($similar_apps)) {
-                        foreach ($similar_apps as $similar_app) {
-                            $similar_app = \pq($similar_app);
-                            $similar_app = $similar_app->find('div:first')->attr('data-docid');
-
-                            switch ($type) {
-                                case 'more_from_developer':
-                                    $app->addMoreFromDeveloper($similar_app);
-                                    break;
-                                case 'related':
-                                    $app->addRelated($similar_app);
-                                    break;
-                                case 'users_also_installed':
-                                    $app->addUsersAlsoInstalled($similar_app);
-                                    break;
-                            }
-                        }
-                    }
-                }
+            $app->setReleaseDate($item->releaseDate);
+            $app->setImageIcon($item->artworkUrl512);
+            $app->setImageThumbnail($item->artworkUrl512);
+            
+            foreach ($item->genres as $genre) {
+              $app->addCategory($genre);
+            }
+            
+            foreach ($item->screenshotUrls as $iphoneScreenshot) {
+              $app->addScreenshotIphone($iphoneScreenshot);
             }
 
-            $icon = $page->find('.doc-banner-icon img')->attr('src');
-            $banner = $page->find('.doc-banner-image-container img')->attr('src');
-
-            $app->setImageThumbnail($icon);
-            $app->setImageIcon($icon);
-            $app->setImageIconLarge($icon);
-            $app->setImageBanner($banner);
-
-            $website = $page->find('.doc-overview a:contains("Visit Developer\'s Website")');
-            if ($website->length()) {
-                $website = $website->attr('href');
-                $app->setWebsiteUrl(substr($website, strlen('http://www.google.com/url?q=')));
+            foreach ($item->ipadScreenshotUrls as $ipadScreenshot) {
+              $app->addScreenshotIpad($ipadScreenshot);
             }
-
-            $email = $page->find('.doc-overview a:contains("Email Developer")');
-            if ($email->length()) {
-                $email = str_replace('mailto:', '', $email->attr('href'));
-                $app->setDeveloperEmail($email);
+            
+            foreach ($item->languageCodesISO2A as $lang) {
+              $app->addSupportedLanguage($lang);
             }
-
-            $videos = $page->find('.doc-video-section object');
-            if ($videos->length()) {
-                foreach ($videos as $video) {
-                    $video = \pq($video);
-
-                    $app->addVideo($video->find('embed')->attr('src'));
-                }
+            
+            foreach ($item->supportedDevices as $supported_device) {
+              $app->addSupportedDevices($supported_device);
             }
+            
+            $app->setDeveloper($item->artistName);
+            $app->setDeveloperUrl($item->artistViewUrl);
+            
+            $app->setPrice($item->price);
+            $app->setFormattedPrice($item->formattedPrice);
+            $app->setCurrentVersion($item->version);
+            $app->setSize($item->fileSizeBytes);
 
-            $screenshots = $page->find('.screenshot-carousel-content-container img');
-            if ($screenshots->length()) {
-                // Could rewrite this with pq->map() if they had better documentation on
-                // how to use it.
-                foreach ($screenshots as $screenshot) {
-                    $screenshot = \pq($screenshot);
+            $rating = $item->averageUserRating;
 
-                    $app->addScreenshot($screenshot->attr('src'));
-                }
-            }
+            $app->setRating($rating);
 
-            $permission_types = array('dangerous', 'safe');
-            foreach ($permission_types as $permission_type) {
-                $permissions = $page->find('#doc-permissions-' . $permission_type . ' .doc-permission-group');
-                if ($permissions->length()) {
-                    foreach ($permissions as $permission) {
-                        $permission = \pq($permission);
-
-                        $title = $permission->find('.doc-permission-group-title')->text();
-                        foreach ($permission->find('.doc-permission-description') as $description) {
-                            $description = \pq($description);
-
-                            $app->addPermission(
-                                array(
-                                  'security' => $permission_type,
-                                  'group' => $title,
-                                  'description' => $description->text(),
-                                  'description_full' => $description->next()->text()
-                                )
-                            );
-                        }
-                    }
-                }
-            }
-
-            $metadata = $page->find('.doc-metadata dt');
-            foreach ($metadata as $meta) {
-                $meta = \pq($meta);
-                $field_name = $meta->text();
-
-                switch ($field_name) {
-                    case 'Updated:':
-                        $app->setLastUpdated($meta->next()->text());
-                        break;
-                    case 'Current Version:':
-                        $app->setCurrentVersion($meta->next()->text());
-                        break;
-                    case 'Requires Android:':
-                        $app->setRequires($meta->next()->text());
-                        break;
-                    case 'Category:':
-                        $app->setCategory($meta->next()->text());
-                        break;
-                    case 'Installs:':
-                        $installs = $meta->next()->find('div')->text();
-                        $installs = str_replace($installs, '', $meta->next()->text());
-
-                        $app->setInstalls($installs);
-                        break;
-                    case 'Size:':
-                        $app->setSize($meta->next()->text());
-                        break;
-                    case 'Price:':
-                        $app->setPrice($meta->next()->text());
-                        break;
-                    case 'Content Rating:':
-                        $app->setContentRating($meta->next()->text());
-                        break;
-                }
-            }
+            $apps[$market_id] = $app;            
+            
         } catch (Exception $e) {
             return false;
         }
@@ -508,6 +409,6 @@ class AppleStoreAPI extends MarketBot\AppleStore
      */
     private function getDetailsUrl($market_id)
     {
-        return sprintf($this->details_url, $this->getSearchType(), $market_id);
+      return sprintf($this->details_url, 'id', $market_id);
     }
 }
