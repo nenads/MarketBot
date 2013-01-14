@@ -5,7 +5,7 @@ namespace PastFuture\MarketBot\App;
 use PastFuture\MarketBot;
 
 /**
- * Windows Phone App
+ * AppStore Phone App
  *
  * @package MarketBot
  * @author Jon Ursenbach <jon@gdgt.com>
@@ -13,9 +13,9 @@ use PastFuture\MarketBot;
  */
 class AppleStoreApp extends MarketBot\App
 {
-    //protected $software_requirements = array();
-    //protected $hardware_requirements = array();
-    //protected $supported_languages = array();
+    protected $software_requirements = array();
+    protected $hardware_requirements = array();
+    protected $supported_languages = array();
 
     /**
      * Images
@@ -24,7 +24,17 @@ class AppleStoreApp extends MarketBot\App
      */
     protected $images = array(
         'thumbnail' => false,
-        'icon' => false
+        'icon' => false,
+    );
+    
+    /**
+     * Screenshots
+     *
+     * @var array
+     */
+    protected $screenshots = array(
+      'iphone' => false,
+      'ipad' => false,
     );
 
     /**
@@ -48,7 +58,7 @@ class AppleStoreApp extends MarketBot\App
         return $market_id;
     }
     
-    protected $kind = "software";
+    /*protected $kind = "software";
     protected $features = array();
     protected $supportedDevices = array();
     protected $isGameCenterEnabled = array(); 
@@ -69,7 +79,7 @@ class AppleStoreApp extends MarketBot\App
     protected $genres = array();
     protected $bundleId = "";
     protected $trackId = "";
-    protected $trackName = "";
+    
     protected $primaryGenreName = "";
     protected $primaryGenreId = "";
     protected $releaseNotes = "";
@@ -86,111 +96,218 @@ class AppleStoreApp extends MarketBot\App
     protected $userRatingCountForCurrentVersion = "";
     protected $trackContentRating = "";
     protected $averageUserRating = "";
-    protected $userRatingCount = "";
-                
+    protected $userRatingCount = "";*/
     
-
+    protected $release_date =""; //app release date
+    
+    protected $artworkUrl60 =""; //app icon
+    
+    protected $supported_devices = array();
+    
+    protected $developer_url = "";
+    
     /**
-     * Format and set the price for this app.
+     * @var array $category.
+     */
+    protected $category = array();
+    
+    protected $formatted_price = "";
+    
+                
+    /**
+     * Set the image icon 60x60px.
      *
-     * @param string
+     * @param string $image
      *
      * @return void
      */
-    public function setPrice($price)
+    public function setImageIcon($image)
     {
-        if (!empty($price)) {
-            $price = trim(strtolower($price));
-            if ($price == 'install' || $price == 'free') {
-                $price = '0.00';
-            } else {
-                $price = str_replace('$', '', $price);
-                $price = trim($price);
-            }
-
-            parent::setPrice($price);
-        }
+        $this->images['icon'] = $image;
     }
 
     /**
-     * Set the number of votes.
+     * Get the image icon.
      *
-     * @param string $votes
+     * @return string
+     */
+    public function getImageIcon()
+    {
+      return $this->images['icon'];
+    }
+    
+     /**
+     * Get the image icon with gloss effect and round edges. Dimension is 175x175
+     *
+     * @return string
+     */
+    public function getImageGlossIcon()
+    {
+      //we need to change ".png" in url to ".175x175-75.png"
+      return str_replace('.png', '.175x175-75.png', $this->images['thumbnail']);
+    }    
+    
+     /**
+     * Set the image icon 512x512px.
+     *
+     * @param string $image
      *
      * @return void
      */
-    public function setVotes($votes)
+    public function setImageThumbnail($image)
     {
-        if (!empty($votes)) {
-            $votes = trim($votes);
-            $votes = str_replace('Ratings:', '', $votes);
-
-            parent::setVotes($votes);
-        }
+      $this->images['thumbnail'] = $image;
     }
 
     /**
-     * Set the rating.
+     * Get the image icon.
      *
-     * @param string $rating
+     * @return string
+     */
+    public function getImageThumbnail()
+    {
+      return $this->images['thumbnail'];
+    }
+    
+     /**
+     * Set the product category that this app belongs to.
+     *
+     * @param string $category
      *
      * @return void
      */
-    public function setRating($rating)
+    public function addCategory($category)
     {
-        if (!empty($rating)) {
-            $rating = explode('Pt', $rating);
-            $rating = $this->wordToNumber($rating[0]) . '.' . $this->wordToNumber($rating[1]);
-
-            $this->rating = (float)$rating;
-        }
+        $this->category[] = $category;
     }
-
     /**
-     * Add a software requirement that this app requires.
+     * Set the product category that this app belongs to.
      *
-     * @param string $type
-     * @param string $requirement
+     * @param string $category
      *
      * @return void
      */
-    public function addSoftwareRequirement($type, $requirement)
+    public function setCategory($category)
     {
-        $this->software_requirements[$type] = $requirement;
+        $this->category = $category;
     }
 
     /**
-     * Get the software requirements that this app requires.
+     * Get the product category that this app belongs to.
      *
-     * @return array
+     * @return string
      */
-    public function getSoftwareRequirement()
+    public function getCategory()
     {
-        return $this->software_requirements;
+        return $this->category;
     }
-
+    
     /**
-     * Add a hardware requirement that this app requires.
+     * Set an array of screenshots for iPhone.
      *
-     * @param string $requirement
+     * @param array $screenshots
      *
      * @return void
      */
-    public function addHardwareRequirement($requirement)
+    public function setScreenshotsIphone($screenshots = array())
     {
-        $this->hardware_requirements[] = $requirement;
+        $this->screenshots['iphone'] = $screenshots;
+    }
+    
+    /**
+     * Set an array of screenshots for iPad.
+     *
+     * @param array $screenshots
+     *
+     * @return void
+     */
+    public function setScreenshotsIpad($screenshots = array())
+    {
+        $this->screenshots['ipad'] = $screenshots;
     }
 
     /**
-     * Get the hardware requirements that this app requires.
+     * Add a screenshot.
+     * @method addScreenshot add screenshot for iPhone and Ipad array keys.
+     * @param string $screenshot
      *
-     * @return array
+     * @return void
      */
-    public function getHardwareRequirement()
+    public function addScreenshot($screenshot)
     {
-        return $this->hardware_requirements;
+        $this->screenshots[] = $screenshot;
+    }
+    
+    /**
+     * Add a screenshot.
+     * @method addScreenshot add screenshot for iPhone.
+     * @param string $screenshot
+     *
+     * @return void
+     */
+    public function addScreenshotIphone($screenshot)
+    {
+        $this->screenshots['iphone'][] = $screenshot;
+    }
+    
+    /**
+     * Add a screenshot.
+     * @method addScreenshot add screenshot for Ipad.
+     * @param string $screenshot
+     *
+     * @return void
+     */
+    public function addScreenshotIpad($screenshot)
+    {
+        $this->screenshots['ipad'][] = $screenshot;
     }
 
+    /**
+     * @method getScreenshots init
+     * 
+     * @return array iphone and ipad assoc keys.
+     */
+    public function getScreenshots()
+    {
+        return $this->screenshots;
+    }
+    
+    /**
+     * @method getScreenshotsIpone init
+     * 
+     * @return array iphone screenshots.
+     */
+    public function getScreenshotsIphone()
+    {
+        return $this->screenshots['iphone'];
+    }
+    
+    /**
+     * @method getScreenshotsIpad init
+     * 
+     * @return array of Ipad scrennshots.
+     */
+    public function getScreenshotsIpad()
+    {
+        return $this->screenshots['ipad'];
+    }  
+    
+    /**
+     * @method setFormattedPrice string
+     *  
+     */
+    function setFormattedPrice($formatted_price){
+      $this->formatted_price = $formatted_price;
+    }
+    /**
+     * @method getFormattedPrice 
+     * 
+     * @return string 
+     */
+    function getFormattedPrice(){
+      return $this->formatted_price;
+    }
+    
     /**
      * Add a language that this app supports.
      *
@@ -212,63 +329,23 @@ class AppleStoreApp extends MarketBot\App
     {
         return $this->supported_languages;
     }
-
-    /**
-     * Set the image thumbnail.
-     *
-     * @param string $image
-     *
-     * @return void
-     */
-    public function setImageThumbnail($image)
-    {
-        if (!empty($image)) {
-            if (strpos($image, 'width=120&height=120') === false) {
-                $image = substr($image, 0, strpos($image, '?'));
-                $image .= '?width=120&height=120&resize=true';
-            }
-
-            $this->images['thumbnail'] = $image;
-        }
+    
+    public function addSupportedDevices($supported_devices){
+      $this->supported_devices = $supported_devices;
+    }
+    
+    public function getSupportedDevices(){
+      return $this->supported_devices;
     }
 
-    /**
-     * Get the image thumbnail.
-     *
-     * @return string
-     */
-    public function getImageThumbnail()
+    public function setDeveloperUrl($developer_url)
     {
-        return $this->images['thumbnail'];
+      $this->developer_url = $developer_url;
     }
-
-    /**
-     * Set the image icon.
-     *
-     * @param string $image
-     *
-     * @return void
-     */
-    public function setImageIcon($image)
+    
+    public function getDeveloperUrl()
     {
-        if (!empty($image)) {
-            if (strpos($image, 'width=200&height=200') === false) {
-                $image = substr($image, 0, strpos($image, '?'));
-                $image .= '?width=200&height=200&resize=true';
-            }
-
-            $this->images['icon'] = $image;
-        }
-    }
-
-    /**
-     * Get the image icon.
-     *
-     * @return string
-     */
-    public function getImageIcon()
-    {
-        return $this->images['icon'];
+      return $this->developer_url;
     }
 
     /**
@@ -291,5 +368,12 @@ class AppleStoreApp extends MarketBot\App
         );
 
         return $conv[strtolower($word)];
+    }
+    
+    public function setReleaseDate($release_date){
+      $this->release_date = $release_date;
+    }
+    public function getReleaseDate(){
+      return $this->release_date;
     }
 }

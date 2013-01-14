@@ -60,7 +60,7 @@ class AppleStoreAPI extends MarketBot\AppleStore
      *
      * @var string
      */
-    protected $details_url = 'https://itunes.apple.com';
+    protected $details_url = 'https://itunes.apple.com/lookup';
 
     /**
      * Search URL
@@ -81,7 +81,7 @@ class AppleStoreAPI extends MarketBot\AppleStore
     public function get($market_id, $type)
     {
         // Only apps are supported right now.
-        if (in_array($type, array('music', 'books', 'movies', 'magazines'))) {
+        if (in_array($type, array('software'))) {
             return false;
         }
 
@@ -276,50 +276,64 @@ class AppleStoreAPI extends MarketBot\AppleStore
             array(
                 'term' => $term,
                 'media' => 'software'
-                //'start' => $this->getPullStart(),
-                //'num' => $this->getPullTotal(),
-                //'hl' => $this->getLanguage(),
-
-                //'c' => $this->getSearchType(),
-                //'safe' => $this->getSafeSearch(),
-                //'price' => $this->getPrice(),
-                //'sort' => $this->getSort()
             )
         );
         
         try {
             $apps = array();
             
-
             $items = json_decode($this->initScraper($url, 'JSON'));
-            
+
             if (count($items) == 0) {
                 return false;
             }
-            
+ 
+            /* @var $item PastFuture\MarketBot\App\AppleStoreApp */
             foreach ($items->results as $item) {
-                //$item = \pq($item);
-
+                
                 $market_id = $item->trackId;
-                //print_r($item);
-                $app = new App\AppleStoreApp(
+                /* @var $apps PastFuture\MarketBot\App\AppleStoreApp */
+                $app = new \PastFuture\MarketBot\App\AppleStoreApp(
                     array(
                       'market_id' => $market_id,
+                      'name' => $item->trackName,
+                      'description' => $item->description,
+                      'release_notes' => $item->releaseNotes,
                       'url' => $item->trackViewUrl
-                        /*'market_id' => $market_id,
-                        'url' => $this->getDetailsUrl($market_id),
-                        'name' => $item->find('.details a')->attr('title'),
-                        'description' => $item->find('.snippet .description')->html(),
-                        'developer' => $item->find('.attribution a')->text(),
-                        'category' => $item->find('.category')->text(),
-                        'price' => $item->find('.buy-button-price:first')->html()*/
                     )
                 );
 
-                //$image = $item->find('.snippet .thumbnail img')->attr('src');
-                //$app->setImageThumbnail($image);
-                //$app->setImageIcon($image);
-                //$app->setImageIconLarge($image);
+                $app->setReleaseDate($item->releaseDate);
+                $app->setImageIcon($item->artworkUrl512);
+                $app->setImageThumbnail($item->artworkUrl512);
+                
+                foreach ($item->genres as $genre) {
+                  $app->addCategory($genre);
+                }
+                
+                foreach ($item->screenshotUrls as $iphoneScreenshot) {
+                  $app->addScreenshotIphone($iphoneScreenshot);
+                }
+
+                foreach ($item->ipadScreenshotUrls as $ipadScreenshot) {
+                  $app->addScreenshotIpad($ipadScreenshot);
+                }
+                
+                foreach ($item->languageCodesISO2A as $lang) {
+                  $app->addSupportedLanguage($lang);
+                }
+                
+                foreach ($item->supportedDevices as $supported_device) {
+                  $app->addSupportedDevices($supported_device);
+                }
+                
+                $app->setDeveloper($item->artistName);
+                $app->setDeveloperUrl($item->artistViewUrl);
+                
+                $app->setPrice($item->price);
+                $app->setFormattedPrice($item->formattedPrice);
+                $app->setCurrentVersion($item->version);
+                $app->setSize($item->fileSizeBytes);
 
                 $rating = $item->averageUserRating;
 

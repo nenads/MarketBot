@@ -374,7 +374,7 @@ abstract class App
 
     /**
      * Add a screenshot.
-     *
+     * @method addScreenshot add screenshot
      * @param string $screenshot
      *
      * @return void
@@ -385,8 +385,8 @@ abstract class App
     }
 
     /**
-     * Get screenshots.
-     *
+     * @method getScreenshots init
+     * 
      * @return array
      */
     public function getScreenshots()
