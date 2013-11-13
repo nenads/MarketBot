@@ -76,15 +76,18 @@ class MarketBot
 		
         curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2); 
+		curl_setopt($ch, CURLOPT_SSLVERSION, 3);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 3); 
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0); //XXX:: We should use 1 but server setup.
+		
+		
 		curl_setopt($ch, CURLOPT_TIMEOUT, 15);
 		
         $response = curl_exec($ch);
 		
 		if(curl_error($ch)){
 			
-			$message = 'CURL - ERRNO CODE: '. curl_errno($ch) . ' - '. curl_error($ch);  
+			$message = 'CURL - ERRNO CODE: '. curl_errno($ch) . ' - '. curl_error($ch) . ' - url: '. $url;  
 			
 			curl_close($ch);
 			
