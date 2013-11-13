@@ -199,7 +199,7 @@ class AppleStoreAPI extends MarketBot\AppleStore
                       'market_id' => $market_id,
                       'name' => $item->trackName,
                       'description' => $item->description,
-                      'release_notes' => $item->releaseNotes,
+                      'release_notes' => isset($item->releaseNotes)? $item->releaseNotes : null,
                       'url' => $item->trackViewUrl
                     )
                 );
@@ -236,7 +236,7 @@ class AppleStoreAPI extends MarketBot\AppleStore
                 $app->setCurrentVersion($item->version);
                 $app->setSize($item->fileSizeBytes);
 
-                $rating = $item->averageUserRating;
+                $rating = isset($item->averageUserRating)? $item->averageUserRating : null;
 
                 $app->setRating($rating);
 
