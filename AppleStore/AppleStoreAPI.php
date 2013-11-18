@@ -113,7 +113,7 @@ class AppleStoreAPI extends MarketBot\AppleStore
                   'market_id' => $market_id,
                   'name' => $item->trackName,
                   'description' => $item->description,
-                  'release_notes' => $item->releaseNotes,
+                  //'release_notes' => $item->releaseNotes,
                   'url' => $item->trackViewUrl
                 )
             );
