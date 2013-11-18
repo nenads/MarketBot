@@ -331,7 +331,7 @@ class AppleStoreApp extends MarketBot\App
     }
     
     public function addSupportedDevices($supported_devices){
-      $this->supported_devices = $supported_devices;
+      $this->supported_devices[] = $supported_devices;
     }
     
     public function getSupportedDevices(){

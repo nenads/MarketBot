@@ -105,7 +105,7 @@ class AppleStoreAPI extends MarketBot\AppleStore
             $url = $this->getDetailsUrl($market_id);
             $tmp_app = json_decode($this->initScraper($url, 'JSON'));
             $item = $tmp_app->results[0];
-        
+
             $market_id = $item->trackId;
             /* @var $apps PastFuture\MarketBot\App\AppleStoreApp */
             $app = new \PastFuture\MarketBot\App\AppleStoreApp(
@@ -113,7 +113,7 @@ class AppleStoreAPI extends MarketBot\AppleStore
                   'market_id' => $market_id,
                   'name' => $item->trackName,
                   'description' => $item->description,
-                  'release_notes' => $item->releaseNotes,
+                  //'release_notes' => $item->releaseNotes,
                   'url' => $item->trackViewUrl
                 )
             );
@@ -150,9 +150,9 @@ class AppleStoreAPI extends MarketBot\AppleStore
             $app->setCurrentVersion($item->version);
             $app->setSize($item->fileSizeBytes);
 
-            $rating = $item->averageUserRating;
+            //$rating = $item->averageUserRating;
 
-            $app->setRating($rating);
+            //$app->setRating($rating);
 
             $apps[$market_id] = $app;            
             
@@ -188,10 +188,10 @@ class AppleStoreAPI extends MarketBot\AppleStore
             if (count($items) == 0) {
                 return false;
             }
- 
+
             /* @var $item PastFuture\MarketBot\App\AppleStoreApp */
             foreach ($items->results as $item) {
-                
+
                 $market_id = $item->trackId;
                 /* @var $apps PastFuture\MarketBot\App\AppleStoreApp */
                 $app = new \PastFuture\MarketBot\App\AppleStoreApp(
@@ -242,7 +242,6 @@ class AppleStoreAPI extends MarketBot\AppleStore
 
                 $apps[$market_id] = $app;
             }
-
             return (!empty($apps)) ? $apps : false;
         } catch (Exception $e) {
             return false;
