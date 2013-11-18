@@ -98,7 +98,7 @@ class GooglePlay extends MarketBot\Android
      *
      * @var string
      */
-    protected $details_url = 'https://play.google.com/store/%s/details?id=%s';
+    protected $details_url = 'https://play.google.com/store/%s/details?id=%s&hl=en'; //Note:: we force en version.
 
     /**
      * Search URL
@@ -142,9 +142,9 @@ class GooglePlay extends MarketBot\Android
             $url = $this->getDetailsUrl($market_id);
             $this->initScraper($url);
 
-            $page = \pq('.details-page');
+            $page = \pq('.details-wrapper');
 
-            $name = $page->find('.doc-banner-title')->text();
+            $name = $page->find('.document-title')->attr('itemprop','name')->text();
             if (empty($name)) {
                 return false;
             }
@@ -154,23 +154,24 @@ class GooglePlay extends MarketBot\Android
                     'market_id' => $market_id,
                     'url' => $url,
                     'name' => $name,
-                    'developer' => $page->find('.doc-banner-title-container a')->text(),
-                    'description' => $page->find('#doc-original-text')->html(),
+                    'developer' => $page->find('.details-section.metadata a.dev-link')->text(),
+                    'description' => $page->find('.details-section.description')->attr('itemprop','description')->html(),
 
-                    'release_notes' => $page->find('.doc-whatsnew-container')->html(),
+                    'release_notes' => $page->find('.details-section.whatsnew')->html(), //remove title
 
-                    'rating' => $page->find('.average-rating-value')->text(),
-                    'votes' => $page->find('.votes:first')->text()
+                    'rating' => $page->find('.details-section.reviews .score-container .score')->text(),
+                    'votes' => $page->find('.details-section.reviews .score-container .reviews-num')->text()
                 )
             );
-
-            $similar = $page->find('.doc-similar')->children();
+			/*
+            $similar = $page->find('.details-section.recommendation .rec-cluster .cards')->children();
             if (!empty($similar)) {
                 foreach ($similar as $similar_type) {
                     $similar_type = \pq($similar_type);
+					//dd($similar_type);
 
-                    $type = $similar_type->attr('data-analyticsid');
-                    $type = str_replace('-', '_', $type);
+                    //$type = $similar_type->attr('data-analyticsid');
+                    //$type = str_replace('-', '_', $type);
 
                     $similar_apps = $similar_type->find('.snippet-list')->children();
                     if (!empty($similar_apps)) {
@@ -192,38 +193,39 @@ class GooglePlay extends MarketBot\Android
                         }
                     }
                 }
-            }
+            }*/ //TODO:: check data on old store and compare
 
-            $icon = $page->find('.doc-banner-icon img')->attr('src');
-            $banner = $page->find('.doc-banner-image-container img')->attr('src');
+            $icon = $page->find('.details-info img.cover-image')->attr('src');
+            $banner = $page->find('.details-info img.cover-image')->attr('src'); //TODO:: what is banner now ?
 
             $app->setImageThumbnail($icon);
             $app->setImageIcon($icon);
             $app->setImageIconLarge($icon);
             $app->setImageBanner($banner);
 
-            $website = $page->find('.doc-overview a:contains("Visit Developer\'s Website")');
+            $website = $page->find('.details-section.metadata a.dev-link');
             if ($website->length()) {
                 $website = $website->attr('href');
                 $app->setWebsiteUrl(substr($website, strlen('http://www.google.com/url?q=')));
             }
 
-            $email = $page->find('.doc-overview a:contains("Email Developer")');
+            $email = $page->find('.details-section.metadata a.dev-link[href^=mail]');
+            
             if ($email->length()) {
                 $email = str_replace('mailto:', '', $email->attr('href'));
                 $app->setDeveloperEmail($email);
             }
 
-            $videos = $page->find('.doc-video-section object');
+            $videos = $page->find('.details-section.screenshots .details-trailer .play-action-container');
+			
             if ($videos->length()) {
                 foreach ($videos as $video) {
                     $video = \pq($video);
-
-                    $app->addVideo($video->find('embed')->attr('src'));
+                    $app->addVideo($video->attr('data-video-url'));
                 }
             }
 
-            $screenshots = $page->find('.screenshot-carousel-content-container img');
+            $screenshots = $page->find('.details-section.screenshots img.screenshot ');
             if ($screenshots->length()) {
                 // Could rewrite this with pq->map() if they had better documentation on
                 // how to use it.
@@ -258,38 +260,43 @@ class GooglePlay extends MarketBot\Android
                 }
             }
 
-            $metadata = $page->find('.doc-metadata dt');
+            $metadata = $page->find('.details-section.metadata .meta-info');
+			
+			$category = $page->find('.document-subtitle.category [itemprop=genre]')->text();
+			
+			if(!is_null($category))
+				$app->setCategory($category);
+			
             foreach ($metadata as $meta) {
                 $meta = \pq($meta);
-                $field_name = $meta->text();
-
-                switch ($field_name) {
-                    case 'Updated:':
-                        $app->setLastUpdated($meta->next()->text());
+                $field_name = $meta->find('.title');
+				
+                switch ($field_name->text()) {
+                    case 'Updated':
+                        $app->setLastUpdated($field_name->next()->text());
                         break;
-                    case 'Current Version:':
-                        $app->setCurrentVersion($meta->next()->text());
+                    case 'Current Version':
+                        $app->setCurrentVersion($field_name->next()->text());
                         break;
-                    case 'Requires Android:':
-                        $app->setRequires($meta->next()->text());
+                    case 'Requires Android':
+                        $app->setRequires($field_name->next()->text());
                         break;
-                    case 'Category:':
-                        $app->setCategory($meta->next()->text());
-                        break;
-                    case 'Installs:':
-                        $installs = $meta->next()->find('div')->text();
-                        $installs = str_replace($installs, '', $meta->next()->text());
-
+    	            //case 'Category': NOTE:: is removed now
+                        //$app->setCategory($field_name->next()->text());
+                        //break;
+                    case 'Installs':
+                        $installs = $field_name->next()->text();
+                        //$installs = str_replace($installs, '', $meta->next()->text());
                         $app->setInstalls($installs);
                         break;
-                    case 'Size:':
-                        $app->setSize($meta->next()->text());
+                    case 'Size':
+                        $app->setSize($field_name->next()->text());
                         break;
-                    case 'Price:':
-                        $app->setPrice($meta->next()->text());
+                    case 'Price':
+                        $app->setPrice($field_name->next()->text());
                         break;
-                    case 'Content Rating:':
-                        $app->setContentRating($meta->next()->text());
+                    case 'Content Rating':
+                        $app->setContentRating($field_name->next()->text());
                         break;
                 }
             }
@@ -323,12 +330,12 @@ class GooglePlay extends MarketBot\Android
                 'sort' => $this->getSort()
             )
         );
-
+		
         try {
             $apps = array();
             $this->initScraper($url);
 
-            $items = \pq('.search-results-item');
+            $items = \pq('.card-list .card ');
             if (!$items->length()) {
                 return false;
             }
@@ -337,31 +344,34 @@ class GooglePlay extends MarketBot\Android
                 $item = \pq($item);
 
                 $market_id = $item->attr('data-docid');
-
+				//dd($item->find('.cover img.cover-image')->attr('src'));
                 $app = new App\Android\GooglePlayApp(
                     array(
                         'market_id' => $market_id,
                         'url' => $this->getDetailsUrl($market_id),
-                        'name' => $item->find('.details a')->attr('title'),
+                        'name' => $item->find('.details a.title')->text(),
                         'description' => $item->find('.snippet .description')->html(),
-                        'developer' => $item->find('.attribution a')->text(),
-                        'category' => $item->find('.category')->text(),
-                        'price' => $item->find('.buy-button-price:first')->html()
+                        'developer' => $item->find('.details a.subtitle')->text(),
+                        //'category' => $item->find('.category')->text(),
+                        'price' => $item->find('.price-container .price.buy:first')->html()
                     )
                 );
 
-                $image = $item->find('.snippet .thumbnail img')->attr('src');
+                $image = $item->find('.cover img.cover-image')->attr('src');
                 $app->setImageThumbnail($image);
                 $app->setImageIcon($image);
                 $app->setImageIconLarge($image);
 
                 // This could be replaced with regex but I'm lazy.
-                $rating = $item->find('.ratings')->attr('title');
-                $rating = strtolower($rating);
+                $rating_html = $item->find('.stars-container .current-rating')->attr('style');
+				preg_match("/[width\s*:\s*]([0-9.]+)/", $rating_html, $rating);
+				//dd($rating);
+                /*$rating = strtolower($rating);
                 $rating = str_replace('rating: ', '', $rating);
                 $rating = substr($rating, 0, strpos($rating, 'stars'));
                 $rating = trim($rating);
-                $app->setRating($rating);
+				 * */
+                $app->setRating($rating[1]);
 
                 $apps[$market_id] = $app;
             }
