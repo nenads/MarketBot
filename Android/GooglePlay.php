@@ -155,8 +155,7 @@ class GooglePlay extends MarketBot\Android
                     'url' => $url,
                     'name' => $name,
                     'developer' => $page->find('.details-section.metadata a.dev-link')->text(),
-                    'description' => $page->find('.details-section.description')->attr('itemprop','description')->html(),
-
+                    'description' => $page->find('.details-section.description .app-orig-desc')->html(),
                     'release_notes' => $page->find('.details-section.whatsnew')->html(), //remove title
 
                     'rating' => $page->find('.details-section.reviews .score-container .score')->text(),
