@@ -9,7 +9,7 @@ It is being used in production on [gdgt](http://gdgt.com).
 ## Currently supported markets
 
 * Amazon App Store
-* Google Play
+* Google Play / New site
 * Windows Phone
 
 ### Wishlist
