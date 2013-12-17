@@ -11,10 +11,7 @@ It is being used in production on [gdgt](http://gdgt.com).
 * Amazon App Store
 * Google Play
 * Windows Phone
-
-### Wishlist
-
-* iTunes
+* Apple Store
 
 ## Dependencies
 
