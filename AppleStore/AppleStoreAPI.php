@@ -229,7 +229,8 @@ class AppleStoreAPI extends MarketBot\AppleStore
                 }
                 
                 $app->setDeveloper($item->artistName);
-                $app->setDeveloperUrl($item->artistViewUrl);
+				
+                if (isset($item->artistViewUrl)) $app->setDeveloperUrl($item->artistViewUrl);
                 
                 $app->setPrice($item->price);
                 $app->setFormattedPrice($item->formattedPrice);
