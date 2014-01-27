@@ -339,7 +339,6 @@ class GooglePlay extends MarketBot\Android
                 return false;
             }
 			
-pre($items);
             foreach ($items as $item) {
                 $item = \pq($item);
 
