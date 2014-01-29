@@ -155,13 +155,14 @@ class GooglePlay extends MarketBot\Android
                     'url' => $url,
                     'name' => $name,
                     'developer' => $page->find('.details-section.metadata a.dev-link')->text(),
-                    'description' => $page->find('.details-section.description .app-orig-desc')->html(),
+                    'description' => $page->find('.details-section.description .id-app-orig-desc')->html(),
                     'release_notes' => $page->find('.details-section.whatsnew')->html(), //remove title
 
                     'rating' => $page->find('.details-section.reviews .score-container .score')->text(),
                     'votes' => $page->find('.details-section.reviews .score-container .reviews-num')->text()
                 )
             );
+
 			/*
             $similar = $page->find('.details-section.recommendation .rec-cluster .cards')->children();
             if (!empty($similar)) {
@@ -262,7 +263,7 @@ class GooglePlay extends MarketBot\Android
             $metadata = $page->find('.details-section.metadata .meta-info');
 			
 			$category = $page->find('.document-subtitle.category [itemprop=genre]')->text();
-			
+
 			if(!is_null($category))
 				$app->setCategory($category);
 			
@@ -338,10 +339,10 @@ class GooglePlay extends MarketBot\Android
             if (!$items->length()) {
                 return false;
             }
-			
+
             foreach ($items as $item) {
                 $item = \pq($item);
-
+				
                 $market_id = $item->attr('data-docid');
 				//dd($item->find('.cover img.cover-image')->attr('src'));
                 $app = new App\Android\GooglePlayApp(
