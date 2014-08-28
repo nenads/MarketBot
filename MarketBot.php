@@ -104,8 +104,6 @@ class MarketBot
 			return;	
 		}
 		
-		 curl_close($ch);
-		
         if ($format == 'JSON') {
           return $response;
         } else {
