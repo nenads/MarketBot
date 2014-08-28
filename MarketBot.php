@@ -94,6 +94,16 @@ class MarketBot
 			throw new \Exception($message);
 		}
 		
+		$res = curl_getinfo($ch);
+		
+		curl_close($ch);
+		
+		//We only want to read valid reposnses since google can sometime return some strange page with not valid html
+		if($res['http_code'] != '200'){  
+			\phpQuery::newDocument(''); //Create dummy so we have nice flow
+			return;	
+		}
+		
 		 curl_close($ch);
 		
         if ($format == 'JSON') {
