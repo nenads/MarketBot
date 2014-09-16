@@ -170,15 +170,19 @@ class AppleStoreAPI extends MarketBot\AppleStore
      *
      * @return array|false If results are found, an array is returned, otherwise false.
      */
-    public function search($term)
+    public function search($term, $store = NULL)
     {
-        $url = $this->search_url . '?';
-        $url .= http_build_query(
-            array(
+    	
+		$param = array(
                 'term' => $term,
-                'media' => 'software'
-            )
-        );
+                'media' => 'software',
+            );
+		
+		if(!is_null($store) && $store != '') //sometime empty string is sent
+			$param['country'] = $store;
+		
+        $url = $this->search_url . '?';
+        $url .= http_build_query( $param );
         
         try {
             $apps = array();

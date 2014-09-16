@@ -80,7 +80,6 @@ class MarketBot
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 3); 
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0); //XXX:: We should use 1 but server setup.
 		
-		
 		curl_setopt($ch, CURLOPT_TIMEOUT, 15);
 		
         $response = curl_exec($ch);
@@ -95,7 +94,7 @@ class MarketBot
 		}
 		
 		$res = curl_getinfo($ch);
-		
+
 		curl_close($ch);
 		
 		//We only want to read valid reposnses since google can sometime return some strange page with not valid html
