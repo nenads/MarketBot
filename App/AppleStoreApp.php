@@ -49,6 +49,7 @@ class AppleStoreApp extends MarketBot\App
      */
     public static function constructMarketId($market_id)
     {
+    	
         $market_id = explode(';', $market_id);
         $market_id = explode(' ', $market_id[1]);
         $market_id = array_filter($market_id);
@@ -112,6 +113,8 @@ class AppleStoreApp extends MarketBot\App
     protected $category = array();
     
     protected $formatted_price = "";
+	
+	protected $store = NULL;
     
                 
     /**
@@ -375,5 +378,19 @@ class AppleStoreApp extends MarketBot\App
     }
     public function getReleaseDate(){
       return $this->release_date;
+    }
+	
+	/**
+	 * Set Store Country
+	 */
+	public function setStore($store){
+      $this->store = $store;
+    }
+	
+	/*
+	 * Get Store Country
+	 */
+    public function getStore(){
+      return $this->store;
     }
 }

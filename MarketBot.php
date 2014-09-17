@@ -81,7 +81,7 @@ class MarketBot
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0); //XXX:: We should use 1 but server setup.
 		
 		curl_setopt($ch, CURLOPT_TIMEOUT, 15);
-		
+		//dd($url);
         $response = curl_exec($ch);
 		
 		if(curl_error($ch)){

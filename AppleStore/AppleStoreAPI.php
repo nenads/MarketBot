@@ -78,14 +78,14 @@ class AppleStoreAPI extends MarketBot\AppleStore
      *
      * @return array|false Array if the item and data were found, false otherwise.
      */
-    public function get($market_id, $type)
+    public function get($market_id, $type, $store = NULL)
     {
         // Only software are supported right now.
         if ($type != "software"){
             return false;
         }
 
-        return $this->getApp($market_id);
+        return $this->getApp($market_id, $store);
     }
 
     /**
@@ -96,13 +96,15 @@ class AppleStoreAPI extends MarketBot\AppleStore
      *
      * @return array|false Array if the item and data were found, false otherwise.
      */
-    private function getApp($market_id)
+    private function getApp($market_id,$store = NULL)
     {
         $app = false; 
+		
+		
 
         try {
 
-            $url = $this->getDetailsUrl($market_id);
+            $url = $this->getDetailsUrl($market_id, $store);
             $tmp_app = json_decode($this->initScraper($url, 'JSON'));
             $item = $tmp_app->results[0];
 
@@ -122,6 +124,8 @@ class AppleStoreAPI extends MarketBot\AppleStore
             $app->setImageIcon($item->artworkUrl512);
             $app->setImageThumbnail($item->artworkUrl512);
             
+			$app->setStore($store);
+			
             foreach ($item->genres as $genre) {
               $app->addCategory($genre);
             }
@@ -204,13 +208,15 @@ class AppleStoreAPI extends MarketBot\AppleStore
                       'name' => $item->trackName,
                       'description' => $item->description,
                       'release_notes' => isset($item->releaseNotes)? $item->releaseNotes : null,
-                      'url' => $item->trackViewUrl
+                      'url' => $item->trackViewUrl,
                     )
                 );
 
                 $app->setReleaseDate($item->releaseDate);
                 $app->setImageIcon($item->artworkUrl512);
                 $app->setImageThumbnail($item->artworkUrl512);
+				
+				$app->setStore($store);
                 
                 foreach ($item->genres as $genre) {
                   $app->addCategory($genre);
@@ -411,8 +417,13 @@ class AppleStoreAPI extends MarketBot\AppleStore
      *
      * @return string
      */
-    private function getDetailsUrl($market_id)
+    private function getDetailsUrl($market_id, $store = NULL)
     {
-      return sprintf($this->details_url, 'id', $market_id);
+    	$url = sprintf($this->details_url, 'id', $market_id);
+		
+		if($store != '')
+			$url .= '&country='.$store;
+    	
+		return $url;
     }
 }
