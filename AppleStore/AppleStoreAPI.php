@@ -182,7 +182,7 @@ class AppleStoreAPI extends MarketBot\AppleStore
 		$param = array(
                 'term' => $term,
                 'media' => 'software',
-                'lang' => 'en_us'
+                'lang' => $this->lang
             );
 		
 		if(!is_null($store) && $store != '') //sometime empty string is sent
