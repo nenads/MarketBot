@@ -19,6 +19,8 @@ class AppleStoreAPI extends MarketBot\AppleStore
      * @var string
      */
     private $search_type = 'software';
+	
+	private $lang = 'en_us'; //Force language to us so all stores get same result
 
     /**
      * Safe Search
@@ -60,7 +62,7 @@ class AppleStoreAPI extends MarketBot\AppleStore
      *
      * @var string
      */
-    protected $details_url = 'https://itunes.apple.com/lookup?%s=%s';
+    protected $details_url = 'https://itunes.apple.com/lookup?%s=%s&lang=%s';
 
     /**
      * Search URL
@@ -180,6 +182,7 @@ class AppleStoreAPI extends MarketBot\AppleStore
 		$param = array(
                 'term' => $term,
                 'media' => 'software',
+                'lang' => 'en_us'
             );
 		
 		if(!is_null($store) && $store != '') //sometime empty string is sent
@@ -419,7 +422,7 @@ class AppleStoreAPI extends MarketBot\AppleStore
      */
     private function getDetailsUrl($market_id, $store = NULL)
     {
-    	$url = sprintf($this->details_url, 'id', $market_id);
+    	$url = sprintf($this->details_url, 'id', $market_id, $this->lang);
 		
 		if($store != '')
 			$url .= '&country='.$store;
