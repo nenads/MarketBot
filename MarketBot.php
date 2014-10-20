@@ -73,17 +73,18 @@ class MarketBot
     protected function initScraper($url, $format = 'HTML')
     {
        $ch = curl_init();
-		
+		//dd($url);
         curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_SSLVERSION, 3);
+		curl_setopt($ch, CURLOPT_SSLVERSION, 'CURL_SSLVERSION_TLSv1'); //Removed 3 to fix error:14094410:SSL routines:SSL3_READ_BYTES:sslv3 alert handshake failure
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 3); 
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0); //XXX:: We should use 1 but server setup.
+		curl_setopt($ch, CURLOPT_SSL_CIPHER_LIST, 'SSLv3'); //XXX:: fix error:14094410:SSL routines:SSL3_READ_BYTES:sslv3 alert handshake failure
 		
-		curl_setopt($ch, CURLOPT_TIMEOUT, 15);
-		//dd($url);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
         $response = curl_exec($ch);
-		
+
 		if(curl_error($ch)){
 			
 			$message = 'CURL - ERRNO CODE: '. curl_errno($ch) . ' - '. curl_error($ch) . ' - url: '. $url;  
