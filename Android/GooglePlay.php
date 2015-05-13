@@ -371,7 +371,7 @@ class GooglePlay extends MarketBot\Android
                 $rating = substr($rating, 0, strpos($rating, 'stars'));
                 $rating = trim($rating);
 				 * */
-                $app->setRating($rating[1]);
+                if(isset($rating[1])) $app->setRating($rating[1]);
 
                 $apps[$market_id] = $app;
             }
